@@ -20,6 +20,11 @@ I decided to investigate the feasibility of transmitting logs to a remote `git` 
 
 The commits themselves would be automated within a python script running as a simple daemon, watching a given directory for changes, checking the directory for possible log tampering, and sending the deltas to a remote log server.
 
+### Tampering detection
+The python script executes `git diff` to review changes since the last commit. If it spots any removed or changed lines, these lines are logged. Ideally, were this deployed in a production environment, the daemon would send an email alert or something similar, as there's nothing stopping a supposed attacker from also tampering with the daemon's logs.
+
+This implementation may miss some tampering, as there is a slight delay between the `git diff` and `git commit` calls. If a log is tampered with in that window, it will be missed. A more robust solution would base the commit on the `diff` itself, but that will be left to a later revision.
+
 ## Test environment
 Commits are tested on two nearly identical Ubuntu Server 13.10 virtual machines: one acting as a server, the other a client. The client machine will push commits to the server at configurable intervals. Furthermore, to benchmark performance under a simulated brute-force login attack via SSH, the client will have a script writing entries to `/var/log/auth.log` as the commits are being sent to the server.
 
@@ -35,12 +40,7 @@ python3 loggit.py -i [interval in seconds] user host local_path remote_path
 python3 brute_force.py -i [interval in seconds] log_path
 ```
 
-## Tampering detection
-The python script executes `git diff` to review changes since the last commit. If it spots any removed or changed lines, these lines are logged. Ideally, were this deployed in a production environment, the daemon would send an email alert or something similar, as there's nothing stopping a supposed attacker from also tampering with the daemon's logs.
-
-This implementation may miss some tampering, as there is a slight delay between the `git diff` and `git commit` calls. If a log is tampered with in that window, it will be missed. A more robust solution would base the commit on the `diff` itself, but that will be left to a later revision.
-
-## Performance
+### Performance
 On light load, the system performs adequately, with each cycle of tampering detection and commit taking approximately 0.27 seconds. However, under high log activity, the performance degrades with each subsequent iteration. For example, while executing both the brute force simulator and the log commit script simultaneously, with no delay between iterations, I saw performance similar to the following, where the last item is the commit duration in seconds:
 
     2014-04-24 17:09:26,635 INFO > Changeset committed [...] 1.0090413093566895
