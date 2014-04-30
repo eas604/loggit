@@ -28,7 +28,7 @@ Commits are tested on two nearly identical Ubuntu Server 13.10 virtual machines:
 
 ### Log committing (as `root`, if tailing `/var/log`)
 ```sh
-python3 loggit.py -i [interval in seconds] user host local_path remote_path"
+python3 loggit.py -i [interval in seconds] user host local_path remote_path
 ```
 
 ### Brute force simulation (as `root`, if writing to `/var/log/auth.log`)
