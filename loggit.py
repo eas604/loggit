@@ -6,8 +6,8 @@
 # Requires the plumbum module, available via pip3
 # Requires a git repository to already exist on the server at the specified path.
 # Requires a git repository to already exist on the local host at the specified path.
-# Requires the local user account to have sudo git privileges in the local log path.
-# Requires the local root account to have an entry in /root/.ssh/config to use.
+# Requires the local user account to have git privileges in the local log path.
+# Requires the local root account to have an entry in /root/.ssh/config to use
 #   the local user account's id_rsa file when connecting to the server.
 # Each commit takes approximately 0.27 seconds.
 
@@ -62,8 +62,7 @@ def create_remote(directory, user, host, remote_path):
         git['remote', 'rm', 'origin']()
     except:
         # origin remote does not yet exist
-        #pass
-        raise
+        pass
 
     try:
         # ensure we have a remote pointing to the specified host
@@ -114,22 +113,19 @@ def find_log_tampering(directory):
     lines = [line.rstrip() for line in diff.split('\n')]
     last_file = None
 
-    # debug that shizz
-    with open('/root/diff.txt', 'w') as fle:
-        fle.writelines(diff)
-
     for line in lines:
+        # A change to a file will begin with --- or +++
         if line.startswith('---') or line.startswith('+++'):
             last_file = line[4:].rstrip()
 
         # Check for removed lines.
         # In a diff, when a line is removed, it starts with '-', followed by the line contents.
-        # Incidentally, this will also catch altered lines: an altered line is first removed, then the new line added.
+        # Incidentally, this will also catch altered lines: an altered line is first removed, 
+        # then the new line added.
         if line.startswith('-') and not line.startswith('---'):
             # Possible removed line
             msg = 'DELETED | {0} {1}'.format(last_file, line)
             logging.warning(msg)
-            continue
 
 
 def main():
