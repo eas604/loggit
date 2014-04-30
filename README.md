@@ -39,6 +39,8 @@ python3 brute_force.py -i [interval in seconds] log_path
 # Tampering detection
 The python script executes `git diff` to review changes since the last commit. If it spots any removed or changed lines, these lines are logged. Ideally, were this deployed in a production environment, the daemon would send an email alert or something similar, as there's nothing stopping a supposed attacker from also tampering with the daemon's logs.
 
+This implementation may miss some tampering, as there is a slight delay between the `git diff` and `git commit` calls. If a log is tampered with in that window, it will be missed. A more robust solution would base the commit on the `diff` itself, but that will be left to a later revision.
+
 # Performance
 On light load, the system performs adequately, with each cycle of tampering detection and commit taking approximately 0.27 seconds. However, under high log activity, the performance degrades with each subsequent iteration. For example, while executing both the brute force simulator and the log commit script simultaneously, with no delay between iterations, I saw performance similar to the following, where the last item is the commit duration in seconds:
 
